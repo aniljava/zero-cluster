@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import zmq
+import random
+import time
+import cloudpickle as pickle
+import sys
+try:
+    import Queue as queue
+except:
+    import queue
+
+
+taskdefs = {}
+tasks = queue.Queue()
+workers = queue.Queue()
+workers_set = set()
+
+
+context = zmq.Context()
+server = context.socket(zmq.ROUTER)
+DEFAULT_BIND_ADDRESS = "tcp://*:8797"
+
+def main():
+    bind_address = DEFAULT_BIND_ADDRESS
+    if len(sys.argv) > 1:
+        bind_address = sys.argv[1]
+    
+    server.bind(bind_address)
+    while True:        
+        request = server.recv_multipart()
+        process(request)
+
+
+def log(*args):
+    print(*args)
+
+
+def process(request):
+    address = request[0]
+    command = request[1]
+    payload = request[2:]
+    
+    if command == b'REGISTER':
+        instance_id, encoded_object = payload        
+        taskdefs[instance_id] = encoded_object
+        
+        obj = pickle.loads(encoded_object)
+        name = obj.__class__.__name__
+        if hasattr(obj, '__name__'):
+            name = obj.__name__
+        
+        log('[{}] with instance id [{}] registered.'.format(name, instance_id))
+
+    if command == b'CALL':
+        call_data = payload[0]            
+        if not workers.empty():
+            worker = workers.get_nowait()
+            workers_set.remove(worker)
+            payload = [
+                worker,
+                b'TASK',
+                address,
+                call_data
+            ]                        
+            server.send_multipart(payload)
+        else:            
+            tasks.put([address, call_data])
+
+    if command == b'TASKDEF':
+        taskdef = taskdefs.get(payload[0])
+        if taskdef is None:
+            log('WARN: Unknown instance requested [{}] was it deployed.'.format(payload))
+        
+        payload =[
+            address,
+            b'TASKDEF',
+            taskdef
+        ]
+        server.send_multipart(payload)        
+
+    if command == b'READY':
+        if not tasks.empty():
+            client_address, task = tasks.get_nowait()
+            payload = [
+                address,
+                b'TASK',
+                client_address,
+                task
+            ]            
+            server.send_multipart(payload)
+        else:
+            if not address in workers_set:
+                workers.put(address)
+                workers_set.add(address)
+
+    if command == b'RESULT':
+        client_address, uid, result = pickle.loads(payload[0])
+        encoded = pickle.dumps([uid, result])
+        payload = [
+            client_address,
+            b'RESULT',
+            encoded
+        ]
+        server.send_multipart(payload)
+
+    if command == b'EXCEPTION':
+        client_address, uid, exception = pickle.loads(payload[0])
+        encoded = pickle.dumps([uid, exception])
+        payload = [
+            client_address,
+            b'EXCEPTION',
+            encoded
+        ]
+        server.send_multipart(payload)
+
+
+main()
