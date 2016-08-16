@@ -103,6 +103,7 @@ def main():
     if len(sys.argv) > 1:
         router = sys.argv[1]
     
+    print('Using router: ' + router)
     if len(sys.argv) > 2:
         from multiprocessing import Process
 
@@ -111,11 +112,12 @@ def main():
             process = Process(target=start, args=[router])
             process.start()
             processes.append(process)
+            print('Started worker : {}'.format(x))
         for process in processes:
             process.join()
-
-
-    start(router)
+    else:
+        print('Started worker with 1 process.')
+        start(router)
 
 
 

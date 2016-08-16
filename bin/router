@@ -27,10 +27,10 @@ def main():
         bind_address = sys.argv[1]
     
     server.bind(bind_address)
+    log('Server listening at: ' + bind_address)
     while True:        
         request = server.recv_multipart()
         process(request)
-
 
 def log(*args):
     print(*args)
@@ -70,7 +70,7 @@ def process(request):
     if command == b'TASKDEF':
         taskdef = taskdefs.get(payload[0])
         if taskdef is None:
-            log('WARN: Unknown instance requested [{}] was it deployed.'.format(payload))
+            log('WARN: Unknown instance requested [{}], was it deployed ?'.format(payload))
         
         payload =[
             address,

@@ -14,7 +14,7 @@ Features and Limitations
 - Supports deployment of class instances and functions
 - Same instance of class is used for later invocation. Allows remote state between calls (example DB Connections)
 - Python 2 and 3 Compatible, but can not be intermixed.
-- No failure handline (Disconnects, delivery guarantees)
+- No failure handling (Disconnects, delivery guarantees)
 
 
 Example Task:
