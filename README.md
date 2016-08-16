@@ -14,7 +14,7 @@ Features and Limitations
 - Supports deployment of class instances and functions
 - Same instance of class is used for later invocation. Allows remote state between calls (example DB Connections)
 - Python 2 and 3 Compatible, but can not be intermixed.
-- No failure handling (Disconnects, delivery guarantees)
+- No error handling (Disconnects, delivery guarantees)
 
 
 Example Task:
@@ -53,3 +53,10 @@ TODO
 - Error handling
 - Complete example/test script
 - Allow decorators for auto deployment
+- Fine grained dependency deployment (Currently using cloudpickle's __main__ hack)
+- Scripts to start/stop remote workers (SSH and kill signals)
+- Notification of disconnects (Heartbeats) , retry policies for remote workers
+- Task expirations on router and workers
+- Policy based result retention and transfers. Currently using ZMQ defaults.
+- Fine grained logging
+- Task cancellation
