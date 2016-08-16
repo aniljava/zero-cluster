@@ -25,9 +25,9 @@ def fix_dependencies(*modules):
 
 
 def init(router):
-    return SimpleDist(router)
+    return ZeroCluster(router)
 
-class SimpleDist:
+class ZeroCluster:
     def __init__(self, router):
         self.router = router
         self.context = zmq.Context.instance()
