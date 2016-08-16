@@ -4,24 +4,12 @@ import zmq
 import cloudpickle as pickle
 import types
 import uuid
-import imp
 import sys
 
 STATUS_ACTIVE = 0
 STATUS_COMPLETED = 1
 STATUS_ERROR = 2
 
-
-def fix_dependencies(*modules):    
-    for module in modules:
-        name = module.__name__        
-
-        fp, pathname, description = imp.find_module(name)
-        # source = module.__file__
-        # mod = imp.load_source('__main__', source)
-        mod = imp.load_module('__main__', fp, pathname, description)
-        sys.modules['__main__'].__dict__[name] = mod
-        
 
 
 def init(router):
