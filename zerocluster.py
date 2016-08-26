@@ -30,8 +30,9 @@ class ZeroCluster:
             name = str(id(obj)).encode('ascii')
         else:
             name = name.encode('ascii')
-
-        obj.__class__.__module__ = '__main__'
+        
+        if obj.__class__.__module__ != '__builtin__':
+            obj.__class__.__module__ = '__main__'
         encoded = pickle.dumps(obj)
         
         payload = [b'REGISTER', name, encoded]
@@ -134,7 +135,7 @@ class CallFuture:
         if self.status == STATUS_COMPLETED:
             return self.result_data
 
-        if self.status == STATUS_ERROR:            
+        if self.status == STATUS_ERROR:
             raise self.exception
 
 class Wrapper:
